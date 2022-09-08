@@ -1,42 +1,115 @@
 @startuml
 skinparam svgDimensionStyle false
-title Routine Interfacility Patient Transport
-participant "Ambulance" as Ambulance
-participant "Health Information Exchange" as HIE [[https://profiles.ihe.net/ITI/HIE-Whitepaper/index.html HIE-Whitepaper]]
+title [[https://profiles.ihe.net/ITI/MHDS/index.html Mobile Health Document Sharing (MHDS)]]\n a simple clinical app scenario
+participant "Clinical App\n and user" as App
+participant "Health Information Exchange\nMHDS Registry\n other FHIR Services" as HIE [[https://profiles.ihe.net/ITI/HIE-Whitepaper/index.html HIE-Whitepaper]]
 autonumber
-activate Ambulance
-activate HIE
-Ambulance -> HIE: Get Medical Summary
-Ambulance <-- HIE: Here is the latest Medical Summary
-Note left of Ambulance: [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
+Note right of App: Configured \n - Certificate Authority\n - App identity\n - time sync source\n - HIE endpoint\n - Audit Repository endpoint
 
-Ambulance -> Ambulance: utalize Medical Summary to treat patient
+App -> App: Patient presents
+activate App
 
-activate Hospital
-Ambulance -> Hospital: Push Transport Summary 
-Note left of Ambulance: [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_RIPT.pdf IHE-Routine Interfaciliyt Patient Transport (RIPT)]]
+group App/User Authorization with OAuth (IUA)
+App -> HIE: query OAuth metadata at endpoint
+App -> HIE: request authorization 
+App <-- HIE: Token granted
+Note left of App: use this token in all the following 
+activate App #SeaGreen
+activate HIE #SeaGreen
+end group
 
-Ambulance -> Hospital: drop off Patient at destination Hospital
+group Communication Security (ATNA)
+App -> HIE: ATNA Secure Communication **opened**
+end group
 
-Hospital-> Hospital: Admit patient
+group Security Logging (ATNA)
+App -> HIE: ATNA record AuditEvent details
+Note left of App: repeat as auditable events happen
+end group
 
-Hospital -> Ambulance: post-it note of Admit details
+Note left of App: Find patient identity in HIE
+group Patient Identity Lookup (PDQm/PIXm)
+App -> HIE: Search for Patient by name or id or etc
+App <-- HIE: Some set of best can be found results
+end group
 
-Ambulance -> HIE: Query, is the patient discharged yet? 
-Ambulance <-- HIE: Not yet
+App -> App: Pick best of best Patient identity
 
-Hospital -> Hospital: Discarge Patient
-Hospital -> HIE: Publish Discharge Summary
-deactivate Hospital
+group Patient Identity Management (PMIR) 
+App -> App: Patient indicate last name change
+App -> HIE: Update golden Patient with new last name
+end group
 
-Ambulance -> HIE: Query for Discarge Summary
-Ambulance <-- HIE: Here is the Discarge Summary details
+alt Find existing Medical Summary
+    group Document Discovery (MHD/MHDS)
+    App -> HIE: MHD ITI-67: are there any Medical Summary?
+    App <-- HIE: results
+
+    App -> App: pick latest or OnDemand 
+
+    App -> HIE: MHD ITI-68 Get Medical Summary
+    App <-- HIE: Here is the latest Medical Summary
+    end group
+
+    Note left of App: Medical Summary [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
+
+else FHIR Resources
+    group Query for Existing Data (QEDm)
+    participant "Data Element Extractor" as Extractor
+    App -> HIE: [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_QEDm.pdf QEDm]] Query for various FHIR Resources
+    HIE -> HIE: Request for QEDm type resources triggers Extractor given cache is empty
+    group Data Element Extractor
+    HIE-> Extractor : [[https://www.ihe.net/uploadedFiles/Documents/ITI/IHE_ITI_Suppl_mXDE.pdf mXDE]] Extract Elements from available Documents
+    activate Extractor #Salmon
+    Extractor -> HIE: MHD ITI-67: are there any Medical Summary?
+    Extractor <-- HIE: results
+    loop for all results
+    Extractor -> HIE: MHD ITI-68 Get document
+    Extractor <-- HIE: results
+    Extractor -> Extractor: Decompose document content to FHIR Resources
+    Extractor -> Extractor: De-Duplicate Resources to just new FHIR Resources
+    Extractor -> HIE: Persist new FHIR Resources
+    Extractor -> HIE: Persist Provenance for document to each Resource found (previous and new)
+    end loop
+    HIE <-- Extractor : done
+    deactivate Extractor
+    end group
+
+    App <-- HIE: Query results
+    App -> HIE: QEDm query
+    App <-- HIE: Query results
+    end group
+end
+
+    App -> App: utalize Medical information to treat patient
+
+group Codes, ValueSet and Concept Maps (SVCM) 
+App -> HIE: Lookup codes, valuesets, or concept mapping
+App <-- HIE: use this code
+end group
+
+group Provider Directory (mCSD) 
+App -> HIE: search for oncologists for referral
+App <--  HIE: List of oncologists 
+end group 
+
+Note left of App: Author a Referral Request [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_360X.pdf 360X]]
+
+group Publish Document (MHD/MHDS)
+App -> HIE: MHD ITI-65 Publish Referral Request 
+HIE->HIE: MHDS Document Registry persists
+App <-- HIE: success
+end group
+
+Note left of App: Provide Patient with oncologists 
+
+Note Left of App: Done with Secure Communication
+App <-- HIE: ATNA Secure Communication **closed**
+deactivate App
 deactivate HIE
 
-Ambulance -> Ambulance: extract some elements
-Ambulance -> Ambulance: Create NEMSIS report
-Ambulance -> State: Deliver NEMSIS report and Discharge Summary to the state
 
-deactivate Ambulance
+deactivate App
+
 
 @enduml
