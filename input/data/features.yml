@@ -1,0 +1,11 @@
+---
+disable_autonumbering: false
+feedback:
+  - active: true
+    dashboard:
+      label: New Issue
+      url: https://github.com/johnmoehrke/EMS-Overall/issues/new/choose
+  - active: true
+    dashboard:
+      label: Issues
+      url: https://github.com/johnmoehrke/EMS-Overall/issues

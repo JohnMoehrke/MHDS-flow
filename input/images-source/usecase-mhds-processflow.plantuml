@@ -1,0 +1,42 @@
+@startuml
+skinparam svgDimensionStyle false
+title Routine Interfacility Patient Transport
+participant "Ambulance" as Ambulance
+participant "Health Information Exchange" as HIE [[https://profiles.ihe.net/ITI/HIE-Whitepaper/index.html HIE-Whitepaper]]
+autonumber
+activate Ambulance
+activate HIE
+Ambulance -> HIE: Get Medical Summary
+Ambulance <-- HIE: Here is the latest Medical Summary
+Note left of Ambulance: [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
+
+Ambulance -> Ambulance: utalize Medical Summary to treat patient
+
+activate Hospital
+Ambulance -> Hospital: Push Transport Summary 
+Note left of Ambulance: [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_RIPT.pdf IHE-Routine Interfaciliyt Patient Transport (RIPT)]]
+
+Ambulance -> Hospital: drop off Patient at destination Hospital
+
+Hospital-> Hospital: Admit patient
+
+Hospital -> Ambulance: post-it note of Admit details
+
+Ambulance -> HIE: Query, is the patient discharged yet? 
+Ambulance <-- HIE: Not yet
+
+Hospital -> Hospital: Discarge Patient
+Hospital -> HIE: Publish Discharge Summary
+deactivate Hospital
+
+Ambulance -> HIE: Query for Discarge Summary
+Ambulance <-- HIE: Here is the Discarge Summary details
+deactivate HIE
+
+Ambulance -> Ambulance: extract some elements
+Ambulance -> Ambulance: Create NEMSIS report
+Ambulance -> State: Deliver NEMSIS report and Discharge Summary to the state
+
+deactivate Ambulance
+
+@enduml
