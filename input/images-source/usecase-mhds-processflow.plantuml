@@ -9,7 +9,7 @@ Note right of App: Configured \n - Certificate Authority\n - App identity\n - ti
 App -> App: Patient presents
 activate App
 
-group App/User Authorization with OAuth (IUA)
+group App/User Authorization with OAuth ( [[https://profiles.ihe.net/ITI/IUA/index.html IUA]] )
 App -> HIE: query OAuth metadata at endpoint
 App -> HIE: request authorization 
 App <-- HIE: Token granted
@@ -18,30 +18,30 @@ activate App #SeaGreen
 activate HIE #SeaGreen
 end group
 
-group Communication Security (ATNA)
+group Communication Security ( [[https://profiles.ihe.net/ITI/TF/Volume1/ch-9.html ATNA]] )
 App -> HIE: ATNA Secure Communication **opened**
 end group
 
-group Security Logging (ATNA)
+group Security Logging ( [[https://profiles.ihe.net/ITI/TF/Volume1/ch-9.html ATNA]] )
 App -> HIE: ATNA record AuditEvent details
 Note left of App: repeat as auditable events happen
 end group
 
 Note left of App: Find patient identity in HIE
-group Patient Identity Lookup (PDQm/PIXm)
+group Patient Identity Lookup ( [[https://profiles.ihe.net/ITI/PIXm/index.html PDQm]] / [[https://profiles.ihe.net/ITI/PIXm/index.html PIXm]] )
 App -> HIE: Search for Patient by name or id or etc
 App <-- HIE: Some set of best can be found results
 end group
 
 App -> App: Pick best of best Patient identity
 
-group Patient Identity Management (PMIR) 
+group Patient Identity Management ( [[https://profiles.ihe.net/ITI/PMIR/index.html PMIR]] ) 
 App -> App: Patient indicate last name change
 App -> HIE: Update golden Patient with new last name
 end group
 
 alt Find existing Medical Summary
-    group Document Discovery (MHD/MHDS)
+    group Document Discovery ( [[https://profiles.ihe.net/ITI/MHD/index.html MHD]] / [[https://profiles.ihe.net/ITI/MHDS/index.html MHDS]] )
     App -> HIE: MHD ITI-67: are there any Medical Summary?
     App <-- HIE: results
 
@@ -54,12 +54,12 @@ alt Find existing Medical Summary
     Note left of App: Medical Summary [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
 
 else FHIR Resources
-    group Query for Existing Data (QEDm)
+    group Query for Existing Data ( [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_QEDm.pdf QEDm]] )
     participant "Data Element Extractor" as Extractor
-    App -> HIE: [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_QEDm.pdf QEDm]] Query for various FHIR Resources
+    App -> HIE: QEDm Query for various FHIR Resources
     HIE -> HIE: Request for QEDm type resources triggers Extractor given cache is empty
-    group Data Element Extractor
-    HIE-> Extractor : [[https://www.ihe.net/uploadedFiles/Documents/ITI/IHE_ITI_Suppl_mXDE.pdf mXDE]] Extract Elements from available Documents
+    group Data Element Extractor ( [[https://www.ihe.net/uploadedFiles/Documents/ITI/IHE_ITI_Suppl_mXDE.pdf mXDE]] )
+    HIE-> Extractor :  Extract Elements from available Documents
     activate Extractor #Salmon
     Extractor -> HIE: MHD ITI-67: are there any Medical Summary?
     Extractor <-- HIE: results
@@ -83,19 +83,19 @@ end
 
     App -> App: utalize Medical information to treat patient
 
-group Codes, ValueSet and Concept Maps (SVCM) 
+group Codes, ValueSet and Concept Maps ( [[https://profiles.ihe.net/ITI/SVCM/index.html SVCM]] ) 
 App -> HIE: Lookup codes, valuesets, or concept mapping
 App <-- HIE: use this code
 end group
 
-group Provider Directory (mCSD) 
+group Provider Directory ( [[https://profiles.ihe.net/ITI/mCSD/index.html mCSD]] ) 
 App -> HIE: search for oncologists for referral
 App <--  HIE: List of oncologists 
 end group 
 
 Note left of App: Author a Referral Request [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_360X.pdf 360X]]
 
-group Publish Document (MHD/MHDS)
+group Publish Document ( [[https://profiles.ihe.net/ITI/MHD/index.html MHD]] / [[https://profiles.ihe.net/ITI/MHDS/index.html MHDS]] )
 App -> HIE: MHD ITI-65 Publish Referral Request 
 HIE->HIE: MHDS Document Registry persists
 App <-- HIE: success
