@@ -17,21 +17,25 @@ Note left of App: use this token in all the following
 activate App #SeaGreen
 activate HIE #SeaGreen
 end group
+note right: OAuth
 
 group Communication Security ( [[https://profiles.ihe.net/ITI/TF/Volume1/ch-9.html ATNA]] )
 App -> HIE: ATNA Secure Communication **opened**
 end group
+note right: TLS (https)
 
 group Security Logging ( [[https://profiles.ihe.net/ITI/TF/Volume1/ch-9.html ATNA]] )
 App -> HIE: ATNA record AuditEvent details
 Note left of App: repeat as auditable events happen
 end group
+note right: FHIR AuditEvent
 
 Note left of App: Find patient identity in HIE
 group Patient Identity Lookup ( [[https://profiles.ihe.net/ITI/PIXm/index.html PDQm]] / [[https://profiles.ihe.net/ITI/PIXm/index.html PIXm]] )
 App -> HIE: Search for Patient by name or id or etc
 App <-- HIE: Some set of best can be found results
 end group
+note right: FHIR Patient
 
 App -> App: Pick best of best Patient identity
 
@@ -39,6 +43,7 @@ group Patient Identity Management ( [[https://profiles.ihe.net/ITI/PMIR/index.ht
 App -> App: Patient indicate last name change
 App -> HIE: Update golden Patient with new last name
 end group
+note right: FHIR Patient
 
 alt Find existing Medical Summary
     group Document Discovery ( [[https://profiles.ihe.net/ITI/MHD/index.html MHD]] / [[https://profiles.ihe.net/ITI/MHDS/index.html MHDS]] )
@@ -50,14 +55,14 @@ alt Find existing Medical Summary
     App -> HIE: MHD ITI-68 Get Medical Summary
     App <-- HIE: Here is the latest Medical Summary
     end group
+    note right: FHIR DocumentReference, List
 
     Note left of App: Medical Summary [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
 
 else FHIR Resources
-    group Query for Existing Data ( [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_QEDm.pdf QEDm]] )
     participant "Data Element Extractor" as Extractor
-    App -> HIE: QEDm Query for various FHIR Resources
-    HIE -> HIE: Request for QEDm type resources triggers Extractor given cache is empty
+    HIE -> HIE: Cache monitor given Patient triggers Extractor
+    note right of HIE: might be QEDm query
     group Data Element Extractor ( [[https://www.ihe.net/uploadedFiles/Documents/ITI/IHE_ITI_Suppl_mXDE.pdf mXDE]] )
     HIE-> Extractor :  Extract Elements from available Documents
     activate Extractor #Salmon
@@ -74,11 +79,14 @@ else FHIR Resources
     HIE <-- Extractor : done
     deactivate Extractor
     end group
+    group Query for Existing Data ( [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_QEDm.pdf QEDm]] )
+    App -> HIE: QEDm Query for various FHIR Resources
 
     App <-- HIE: Query results
     App -> HIE: QEDm query
     App <-- HIE: Query results
     end group
+    note right: FHIR Observation, AllergyIntolerance, Condition, DiagnosticReport,\n Medication, MedicationStatement, MedicationRequest,\n Immunization, Procedure, Encounter, Provenance
 end
 
     App -> App: utalize Medical information to treat patient
@@ -87,19 +95,22 @@ group Codes, ValueSet and Concept Maps ( [[https://profiles.ihe.net/ITI/SVCM/ind
 App -> HIE: Lookup codes, valuesets, or concept mapping
 App <-- HIE: use this code
 end group
+note right: FHIR CodeSystem, ValueSet, ConceptMap
 
 group Provider Directory ( [[https://profiles.ihe.net/ITI/mCSD/index.html mCSD]] ) 
 App -> HIE: search for oncologists for referral
 App <--  HIE: List of oncologists 
 end group 
+note right: FHIR Organization, OrganizationAlliation, Location,\n HealthcareService, Practitioner, PractitionerRole, Endpoint
 
 Note left of App: Author a Referral Request [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_Suppl_360X.pdf 360X]]
 
 group Publish Document ( [[https://profiles.ihe.net/ITI/MHD/index.html MHD]] / [[https://profiles.ihe.net/ITI/MHDS/index.html MHDS]] )
 App -> HIE: MHD ITI-65 Publish Referral Request 
-HIE->HIE: MHDS Document Registry persists
+HIE->HIE: persist
 App <-- HIE: success
 end group
+note right: FHIR DocumentReference, List, Binary
 
 Note left of App: Provide Patient with oncologists 
 

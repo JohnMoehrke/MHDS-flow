@@ -3,8 +3,8 @@
 # the id should be lowercase made up of "ihe." + {domain acronym} + "." + {profile acronym/short-name}
 # e.g. ihe.iti.mhds, or ihe.iti.basicaudit
 id: ihe.iti.mhds.flow
-canonical: https://profiles.ihe.net/ITI/MHDS/flow
-version: 0.1.1
+canonical: https://profiles.ihe.net/ITI/MHDS-flow
+version: 0.1.0-draft
 name: IHE_ITI_MHDS_flow
 title: "MHDS flow scenarios"
 description: Overview of solving the HIE Interoperability needs with FHIR using MHDS
@@ -15,8 +15,16 @@ status: active
 license:  CC-BY-4.0
 fhirVersion: 4.0.1
 jurisdiction: 'http://unstats.un.org/unsd/methods/m49/m49.htm#001'
-copyrightYear: 2022+
-
+copyrightYear: 2021+
+publisher:
+  - name: IHE IT Infrastructure Technical Committee
+  - url: https://www.ihe.net/ihe_domains/it_infrastructure/
+  - email: iti@ihe.net
+contact:
+  - name: IHE IT Infrastructure Technical Committee
+    telecom:
+      - system: email
+        value: iti@ihe.net
 
 parameters:  # see https://confluence.hl7.org/display/FHIR/Implementation+Guide+Parameters
   path-resource:
