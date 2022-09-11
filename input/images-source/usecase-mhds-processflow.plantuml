@@ -4,7 +4,10 @@ title [[https://profiles.ihe.net/ITI/MHDS/index.html Mobile Health Document Shar
 participant "Clinical App\n and user" as App
 participant "Health Information Exchange\nMHDS Registry\n other FHIR Services" as HIE [[https://profiles.ihe.net/ITI/HIE-Whitepaper/index.html HIE-Whitepaper]]
 autonumber
+
 Note right of App: Configured \n - Certificate Authority\n - App identity\n - time sync source\n - HIE endpoint\n - Audit Repository endpoint
+
+...
 
 App -> App: Patient presents
 activate App
@@ -30,6 +33,8 @@ Note left of App: repeat as auditable events happen
 end group
 note right: FHIR AuditEvent
 
+
+
 Note left of App: Find patient identity in HIE
 group Patient Identity Lookup ( [[https://profiles.ihe.net/ITI/PIXm/index.html PDQm]] / [[https://profiles.ihe.net/ITI/PIXm/index.html PIXm]] )
 App -> HIE: Search for Patient by name or id or etc
@@ -45,9 +50,13 @@ App -> HIE: Update golden Patient with new last name
 end group
 note right: FHIR Patient
 
+
+
 alt Find existing Medical Summary
     group Document Discovery ( [[https://profiles.ihe.net/ITI/MHD/index.html MHD]] / [[https://profiles.ihe.net/ITI/MHDS/index.html MHDS]] )
     App -> HIE: MHD ITI-67: are there any Medical Summary?
+    Note left of App: Query for classCode=LOINC 34133-9\nLikely OnDemand Document Entry
+
     App <-- HIE: results
 
     App -> App: pick latest or OnDemand 
@@ -57,18 +66,18 @@ alt Find existing Medical Summary
     end group
     note right: FHIR DocumentReference, List
 
-    Note left of App: Medical Summary [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
+    Note left of App: Medical Summary [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_TF_Vol1.pdf#nameddest=4_Exchange_of_Personal_Health_R CCD / IHE-XPHR]], [[https://www.hl7.org/ccdasearch/ C-CDA]] or [[https://hl7.org/fhir/uv/ips/ IPS]]
 
 else FHIR Resources
     participant "Data Element Extractor" as Extractor
     HIE -> HIE: Cache monitor given Patient triggers Extractor
-    note right of HIE: might be QEDm query
+    note right of HIE: might be\n- QEDm query\n- new document published\n- patient lookup\n- nightly batch\n- etc
     group Data Element Extractor ( [[https://www.ihe.net/uploadedFiles/Documents/ITI/IHE_ITI_Suppl_mXDE.pdf mXDE]] )
     HIE-> Extractor :  Extract Elements from available Documents
     activate Extractor #Salmon
     Extractor -> HIE: MHD ITI-67: are there any Medical Summary?
     Extractor <-- HIE: results
-    loop for all results
+    loop for all document results
     Extractor -> HIE: MHD ITI-68 Get document
     Extractor <-- HIE: results
     Extractor -> Extractor: Decompose document content to FHIR Resources
@@ -89,7 +98,8 @@ else FHIR Resources
     note right: FHIR Observation, AllergyIntolerance, Condition, DiagnosticReport,\n Medication, MedicationStatement, MedicationRequest,\n Immunization, Procedure, Encounter, Provenance
 end
 
-    App -> App: utalize Medical information to treat patient
+
+App -> App: utalize Medical information to treat patient
 
 group Codes, ValueSet and Concept Maps ( [[https://profiles.ihe.net/ITI/SVCM/index.html SVCM]] ) 
 App -> HIE: Lookup codes, valuesets, or concept mapping
@@ -114,13 +124,27 @@ note right: FHIR DocumentReference, List, Binary
 
 Note left of App: Provide Patient with oncologists 
 
-Note Left of App: Done with Secure Communication
+Note Right of App: Done with Secure Communication and token
 App <-- HIE: ATNA Secure Communication **closed**
 deactivate App
 deactivate HIE
 
+...
+
+App -> HIE: more interactions over time...
+Note left of App: Publish Discharge Summary\n [[https://www.ihe.net/uploadedFiles/Documents/PCC/IHE_PCC_TF_Vol1.pdf#nameddest=3_4_2_2_Discharge_Summary_Optio XDS-MS Discharge Summary Option]] or\n [[https://www.hl7.org/ccdasearch/templates/2.16.840.1.113883.10.20.22.1.8.html C-CDA Discharge Summary Option]]
+group Publish Document ( [[https://profiles.ihe.net/ITI/MHD/index.html MHD]] / [[https://profiles.ihe.net/ITI/MHDS/index.html MHDS]] )
+App -> HIE: MHD ITI-65 Publish Discharge Summary 
+activate App #SeaGreen
+activate HIE #SeaGreen
+HIE->HIE: persist
+App <-- HIE: success
+deactivate App
+deactivate HIE
+end group
 
 deactivate App
 
+...
 
 @enduml
