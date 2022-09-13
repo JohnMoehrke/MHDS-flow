@@ -9,6 +9,10 @@ This section contains guidance on IHE offerings for Health Information Exchange:
 - [Provider Directory Solutions](https://profiles.ihe.net/ITI/HIE-Whitepaper/index.html#6-common-provider-directory): Profiles, and Content
 - [Security and Privacy Solutions](https://profiles.ihe.net/ITI/HIE-Whitepaper/index.html#7-security-and-privacy): Handbooks, Profiles, and Content
 
+### [Mobile Health Document Sharing (MHDS)](https://profiles.ihe.net/ITI/MHDS/index.html)
+
+Specification https://profiles.ihe.net/ITI/MHDS/index.html
+
 ### Use-case App using HIE Flow
 
 When a patient presents for a medical emergency to a hospital. 
